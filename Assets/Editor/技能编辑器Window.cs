@@ -1,11 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using System.ComponentModel.Design;
 using System.IO;
-using Unity.VisualScripting.TextureAssets;
-using PlasticGui;
+using System.Linq;
+using System;
 
 public class 技能编辑器Window : EditorWindow
 {
@@ -66,6 +63,8 @@ public class 技能编辑器Window : EditorWindow
     GUIContent m_Content1 = new GUIContent("基本信息");
     bool m_Foldout2;
     GUIContent m_Content2 = new GUIContent("技能详情");
+    bool m_Foldout3;
+    GUIContent m_Content3 = new GUIContent("动画属性");
 
     string path = "Assets/Resources/";
     string configname = "skillConfig";
@@ -73,7 +72,14 @@ public class 技能编辑器Window : EditorWindow
     public SkillConfigsSto 配置文件;
     public SkillConfigsSto last配置文件;
 
-
+    public GameObject 模型;
+    Animator ani;
+    private int 动画Idx = 0;
+    float 当前帧;
+    private Vector2 scrollView = new Vector2(0, 0);
+    int frameSelectIdx;// 当前帧idx
+    //float frameTimeFloat;// 动画播放时长
+    
     [MenuItem("工具箱/技能编辑器")]
     static void ShowWindow()
     {
@@ -111,7 +117,7 @@ public class 技能编辑器Window : EditorWindow
         {
             SaveConfig();
         }
-
+        // 基本信息
         EditorGUILayout.BeginVertical(GUI.skin.box); //垂直布局样式
         this.m_Foldout1 = EditorGUILayout.Foldout(m_Foldout1, m_Content1);
         if (m_Foldout1)
@@ -123,7 +129,7 @@ public class 技能编辑器Window : EditorWindow
             this.技能描述 = EditorGUILayout.TextArea(this.技能描述, GUILayout.Height(35));
         }
         EditorGUILayout.EndVertical();
-
+        // 技能详情
         EditorGUILayout.BeginVertical(GUI.skin.box);
         this.m_Foldout2 = EditorGUILayout.Foldout(m_Foldout2, m_Content2);
         if (m_Foldout2)
@@ -147,8 +153,74 @@ public class 技能编辑器Window : EditorWindow
             this.释放时可移动 = EditorGUILayout.Toggle("释放时可移动", 释放时可移动);
         }
         EditorGUILayout.EndVertical();
+
+        // 动画属性
+        EditorGUILayout.BeginVertical(GUI.skin.box);
+        m_Foldout3 = EditorGUILayout.Foldout(m_Foldout3, m_Content3);
+        if (m_Foldout3)
+        {
+            模型 = EditorGUILayout.ObjectField("添加角色", 模型, typeof(GameObject), true) as GameObject;
+            if (GUILayout.Button("应用角色", GUILayout.Width(100)))
+            {
+                if (模型 == null)
+                {
+                    Debug.LogError("请添加角色");
+                    return;
+                }
+                ani = 模型.GetComponent<Animator>();
+                if (ani == null)
+                {
+                    Debug.LogError("请在模型上绑定Animator组件");
+                    return;
+                }
+            }
+
+            if (ani != null)
+            {
+                var clips = ani.runtimeAnimatorController.animationClips;
+                动画Idx = Mathf.Clamp(动画Idx, 0, clips.Length);
+                string[] clipNamesArray = clips.Select(t => t.name).ToArray();
+                动画Idx = EditorGUILayout.Popup("动画片段", 动画Idx, clipNamesArray);
+
+                AnimationClip clip = clips[动画Idx];
+                clip.SampleAnimation(ani.gameObject, 当前帧);
+                frameSelectIdx = EditorGUILayout.IntSlider(frameSelectIdx, 0, (int)(clip.length * clip.frameRate - 1));
+                EditorGUILayout.LabelField("动画时长：" + clip.length + "s");
+                deawFrames(clip);
+
+            }
+        }
+        EditorGUILayout.EndVertical();
     }
 
+    /// <summary>
+    /// 绘制帧信息
+    /// </summary>
+    private void deawFrames(AnimationClip clip)
+    {
+        int frameCount = (int)(clip.length * clip.frameRate);
+        float 帧绘制width = 40;
+        float 帧信息区域width = 600;
+        float 帧信息区域height = 50;
+        scrollView = EditorGUILayout.BeginScrollView(scrollView, true, true, GUILayout.Width(帧信息区域width), GUILayout.Height(帧信息区域height));
+        EditorGUILayout.BeginHorizontal();
+        for (int i = 0; i < frameCount; i++)
+        {
+            bool selected = i == frameSelectIdx;
+            string title = "" + i;
+            if (GUILayout.Button(title, selected ? GUIStyles.item_select : GUIStyles.item_normal, GUILayout.Width(帧绘制width)))
+            {
+                frameSelectIdx = selected ? -1 : i;
+            }
+            当前帧 = frameSelectIdx * (1 / clip.frameRate);
+        }
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    /// 加载配置
+    /// </summary>
     void loadConfig()
     {
         if (this.配置文件 == null) return;
@@ -170,7 +242,9 @@ public class 技能编辑器Window : EditorWindow
         this.释放时可转向 = this.配置文件.释放时可转向;
         this.释放时可移动 = this.配置文件.释放时可移动;
     }
-
+    /// <summary>
+    /// 保存配置
+    /// </summary>
     void SaveConfig()
     {
         if (this.配置文件 == null) return;
@@ -179,7 +253,7 @@ public class 技能编辑器Window : EditorWindow
         this.配置文件.技能描述 = this.技能描述;
         this.配置文件.目标检测类型 = this.目标检测类型Idx;
         this.配置文件.技能目标类型 = this.技能目标类型Idx;
-        if (icon != null) this.配置文件.icon = 技能Icon.name;
+        if (icon != null) this.配置文件.icon = this.技能Icon.name;
         this.配置文件.技能类型 = this.技能类型Idx;
         this.配置文件.CD时间 = this.CD时间;
         this.配置文件.技能指示器形状 = 技能指示器形状Idx;
@@ -192,4 +266,12 @@ public class 技能编辑器Window : EditorWindow
         this.配置文件.释放时可转向 = this.释放时可转向;
         this.配置文件.释放时可移动 = this.释放时可移动;
     }
+}
+
+
+public static class GUIStyles
+{
+    public static GUIStyle item_select = "MetransitionSelectHend";
+    public static GUIStyle item_normal = "MetransitionSelect";
+    public static GUIStyle box = "HelpBox";
 }
