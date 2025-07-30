@@ -1,0 +1,195 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using System.ComponentModel.Design;
+using System.IO;
+using Unity.VisualScripting.TextureAssets;
+using PlasticGui;
+
+public class 技能编辑器Window : EditorWindow
+{
+    private int 技能ID;
+    private string 技能名称;
+    private string 技能描述;
+    private int 目标检测类型Idx;
+    private string[] 目标检测类型Array = new string[]
+    {
+        "敌方",
+        "友方",
+        "友方除自己",
+        "全体",
+        "全体除自己",
+    };
+    private int 技能目标类型Idx;
+    private string[] 技能目标类型Array = new string[]
+    {
+        "对面向",
+        "区域",
+        "单体锁定",
+        "对自己",
+        "全体除自己",
+    };
+    private Texture 技能Icon;
+    private string icon;
+    private int 技能类型Idx;
+    private string[] 技能类型Array = new string[]
+    {
+        "普攻",
+        "主动技能",
+        "被动技能",
+    };
+    private float CD时间;
+    private int 技能指示器形状Idx;
+    private string[] 指示器形状Array = new string[]
+    {
+        "圆形",
+        "矩形",
+        "扇形",
+    };
+    private float 范围参数1;
+    private float 范围参数2;
+    private int 资源消耗类型Idx;
+    private string[]  资源消耗类型Array = new string[]
+    {
+        "法力",
+        "精力",
+        "耐力",
+    };
+    private float 资源消耗数量;
+    private int 升级所需等级;
+    private bool 面向施法对象;
+    private bool 释放时可转向;
+    private bool 释放时可移动;
+
+    bool m_Foldout1;
+    GUIContent m_Content1 = new GUIContent("基本信息");
+    bool m_Foldout2;
+    GUIContent m_Content2 = new GUIContent("技能详情");
+
+    string path = "Assets/Resources/";
+    string configname = "skillConfig";
+    string ext = ".asset";
+    public SkillConfigsSto 配置文件;
+    public SkillConfigsSto last配置文件;
+
+
+    [MenuItem("工具箱/技能编辑器")]
+    static void ShowWindow()
+    {
+        技能编辑器Window window = EditorWindow.GetWindow<技能编辑器Window>();
+        window.Show();
+    }
+    private void OnGUI()
+    {
+        // 新建配置
+        if (GUILayout.Button("新建配置", GUILayout.Width(100)))
+        {
+            ScriptableObject scriptable = ScriptableObject.CreateInstance<SkillConfigsSto>();
+            int idx = 0;
+            string url = "";
+            while(true)
+            {
+                url = path + configname + idx + ext;
+                if (!File.Exists(url))
+                    break;
+                idx++;
+            }
+            AssetDatabase.CreateAsset(scriptable, url);
+            this.配置文件 = Resources.Load(configname + idx) as SkillConfigsSto;
+            loadConfig();
+        }
+        // 读取配置
+        配置文件 = EditorGUILayout.ObjectField("配置文件", 配置文件, typeof(SkillConfigsSto), true) as SkillConfigsSto;
+        if (last配置文件 != 配置文件)
+        {
+            last配置文件 = 配置文件;
+            loadConfig();
+        }
+        // 保存配置
+        if (GUILayout.Button("保存", GUILayout.Width(100)))
+        {
+            SaveConfig();
+        }
+
+        EditorGUILayout.BeginVertical(GUI.skin.box); //垂直布局样式
+        this.m_Foldout1 = EditorGUILayout.Foldout(m_Foldout1, m_Content1);
+        if (m_Foldout1)
+        {
+            this.技能Icon = EditorGUILayout.ObjectField("添加贴图", 技能Icon, typeof(Texture), true) as Texture;
+            this.技能ID = EditorGUILayout.IntField("技能ID", 技能ID);
+            this.技能名称 = EditorGUILayout.TextField("技能名称", 技能名称);
+            EditorGUILayout.LabelField("技能描述");
+            this.技能描述 = EditorGUILayout.TextArea(this.技能描述, GUILayout.Height(35));
+        }
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical(GUI.skin.box);
+        this.m_Foldout2 = EditorGUILayout.Foldout(m_Foldout2, m_Content2);
+        if (m_Foldout2)
+        {
+            this.目标检测类型Idx = EditorGUILayout.Popup("目标检测类型", 目标检测类型Idx, 目标检测类型Array);
+            this.技能目标类型Idx = EditorGUILayout.Popup("技能目标类型", 技能目标类型Idx, 技能目标类型Array);
+            this.技能类型Idx = EditorGUILayout.Popup("技能类型", 技能类型Idx, 技能类型Array);
+            this.CD时间 = EditorGUILayout.FloatField("CD时间", CD时间);
+            this.技能指示器形状Idx = EditorGUILayout.Popup("技能指示器形状", 技能指示器形状Idx, 指示器形状Array);
+            EditorGUI.indentLevel++;// 缩进
+            this.范围参数1 = EditorGUILayout.FloatField("范围参数1", 范围参数1);
+            this.范围参数2 = EditorGUILayout.FloatField("范围参数2", 范围参数2);
+            EditorGUI.indentLevel--;// 缩进
+            this.资源消耗类型Idx = EditorGUILayout.Popup("资源消耗类型", 资源消耗类型Idx, 资源消耗类型Array);
+            EditorGUI.indentLevel++;// 缩进
+            this.资源消耗数量 = EditorGUILayout.FloatField("资源消耗数量", 资源消耗数量);
+            this.升级所需等级 = EditorGUILayout.IntField("升级所需等级", 升级所需等级);
+            EditorGUI.indentLevel--;// 缩进
+            this.面向施法对象 = EditorGUILayout.Toggle("面向施法对象", 面向施法对象);
+            this.释放时可转向 = EditorGUILayout.Toggle("释放时可转向", 释放时可转向);
+            this.释放时可移动 = EditorGUILayout.Toggle("释放时可移动", 释放时可移动);
+        }
+        EditorGUILayout.EndVertical();
+    }
+
+    void loadConfig()
+    {
+        if (this.配置文件 == null) return;
+        this.技能ID = this.配置文件.技能ID;
+        this.技能名称 = this.配置文件.技能名称;
+        this.技能描述 = this.配置文件.技能描述;
+        this.目标检测类型Idx = this.配置文件.目标检测类型;
+        this.技能目标类型Idx = this.配置文件.技能目标类型;
+        this.技能Icon = Resources.Load<Texture>("SkillIcon/" + this.配置文件.icon);
+        this.技能类型Idx = this.配置文件.技能类型;
+        this.CD时间 = this.配置文件.CD时间;
+        this.技能指示器形状Idx = this.配置文件.技能指示器形状;
+        this.范围参数1 = this.配置文件.范围参数1;
+        this.范围参数2 = this.配置文件.范围参数2;
+        this.资源消耗类型Idx = this.配置文件.资源消耗类型;
+        this.资源消耗数量 = this.配置文件.资源消耗数量;
+        this.升级所需等级 = this.配置文件.升级所需等级;
+        this.面向施法对象 = this.配置文件.面向施法对象;
+        this.释放时可转向 = this.配置文件.释放时可转向;
+        this.释放时可移动 = this.配置文件.释放时可移动;
+    }
+
+    void SaveConfig()
+    {
+        if (this.配置文件 == null) return;
+        this.配置文件.技能ID = this.技能ID;
+        this.配置文件.技能名称 = this.技能名称;
+        this.配置文件.技能描述 = this.技能描述;
+        this.配置文件.目标检测类型 = this.目标检测类型Idx;
+        this.配置文件.技能目标类型 = this.技能目标类型Idx;
+        if (icon != null) this.配置文件.icon = 技能Icon.name;
+        this.配置文件.技能类型 = this.技能类型Idx;
+        this.配置文件.CD时间 = this.CD时间;
+        this.配置文件.技能指示器形状 = 技能指示器形状Idx;
+        this.配置文件.范围参数1 = this.范围参数1;
+        this.配置文件.范围参数2 = this.范围参数2;
+        this.配置文件.资源消耗类型 = 资源消耗类型Idx;
+        this.配置文件.资源消耗数量 = this.资源消耗数量;
+        this.配置文件.升级所需等级 = this.升级所需等级;
+        this.配置文件.面向施法对象 = this.面向施法对象;
+        this.配置文件.释放时可转向 = this.释放时可转向;
+        this.配置文件.释放时可移动 = this.释放时可移动;
+    }
+}
