@@ -22,6 +22,10 @@ public class SkillConfigsSto : ScriptableObject
     public bool 释放时可转向;
     public bool 释放时可移动;
 
-
+    // 动画
+    public string 模型name;
+    public string 使用动画片段;
+    public List<G.跳转条件> 跳转条件list = new List<G.跳转条件>();
+    
 
 }

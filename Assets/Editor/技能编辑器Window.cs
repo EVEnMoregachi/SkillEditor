@@ -3,6 +3,8 @@ using UnityEditor;
 using System.IO;
 using System.Linq;
 using System;
+using NUnit.Framework;
+using System.Collections.Generic;
 
 public class 技能编辑器Window : EditorWindow
 {
@@ -78,8 +80,26 @@ public class 技能编辑器Window : EditorWindow
     float 当前帧;
     private Vector2 scrollView = new Vector2(0, 0);
     int frameSelectIdx;// 当前帧idx
-    //float frameTimeFloat;// 动画播放时长
-    
+                       //float frameTimeFloat;// 动画播放时长
+
+
+    string 使用动画名;
+    string[] 操作Array = new string[]
+    {
+        "攻击",
+        "移动",
+    };
+
+    List<G.跳转条件> 跳转条件list = new List<G.跳转条件>();
+
+
+
+
+
+
+
+
+
     [MenuItem("工具箱/技能编辑器")]
     static void ShowWindow()
     {
@@ -180,13 +200,90 @@ public class 技能编辑器Window : EditorWindow
                 var clips = ani.runtimeAnimatorController.animationClips;
                 动画Idx = Mathf.Clamp(动画Idx, 0, clips.Length);
                 string[] clipNamesArray = clips.Select(t => t.name).ToArray();
+
+                EditorGUILayout.BeginHorizontal();
                 动画Idx = EditorGUILayout.Popup("动画片段", 动画Idx, clipNamesArray);
+                if (GUILayout.Button("添加动画", GUILayout.Width(80)))
+                {
+                    if (使用动画名 == "" || 使用动画名 == null)
+                    {
+                        使用动画名 = clipNamesArray[动画Idx];
+                    }
+                    else
+                    {
+                        使用动画名 += "|" + clipNamesArray[动画Idx];
+                    }
+                }
+                if (GUILayout.Button("撤销动画", GUILayout.Width(80)))
+                {
+                    if (使用动画名.Length > 0 && 使用动画名 != null)
+                    {
+                        int pos = 使用动画名.LastIndexOf("|");
+                        if (pos > -1)
+                        {
+                            使用动画名 = 使用动画名.Substring(0, pos);
+                        }
+                        else
+                        {
+                            使用动画名 = "";
+                        }
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
 
                 AnimationClip clip = clips[动画Idx];
                 clip.SampleAnimation(ani.gameObject, 当前帧);
                 frameSelectIdx = EditorGUILayout.IntSlider(frameSelectIdx, 0, (int)(clip.length * clip.frameRate - 1));
                 EditorGUILayout.LabelField("动画时长：" + clip.length + "s");
                 deawFrames(clip);
+
+                EditorGUILayout.LabelField("使用动画片段：", 使用动画名);
+                if (GUILayout.Button("添加跳转条件", GUILayout.Width(200)))
+                {
+                    G.跳转条件 跳转条件 = new G.跳转条件();
+                    跳转条件list.Add(跳转条件);
+                }
+                for (int i = 0; i < 跳转条件list.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button("删除", GUILayout.Width(40)))
+                    {
+                        跳转条件list.RemoveAt(i);
+                        EditorGUILayout.EndHorizontal();
+                        continue;
+                    }
+
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("跳转目标动画"));
+                    跳转条件list[i].目标动画 = EditorGUILayout.Popup("跳转目标动画", 跳转条件list[i].目标动画, clipNamesArray, GUILayout.Width(150));
+                    AnimationClip clip_ = clips[跳转条件list[i].目标动画];
+                    int frameCount = (int)(clip_.length * clip_.frameRate);
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  开始帧"));
+                    跳转条件list[i].开始帧 = EditorGUILayout.IntField("  开始帧", 跳转条件list[i].开始帧, GUILayout.Width(100));
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  结束帧"));
+                    跳转条件list[i].结束帧 = EditorGUILayout.IntField("  结束帧", 跳转条件list[i].结束帧, GUILayout.Width(100));
+
+                    跳转条件list[i].开始帧 = Mathf.Clamp(跳转条件list[i].开始帧, 0, frameCount - 1);
+                    跳转条件list[i].结束帧 = Mathf.Clamp(跳转条件list[i].结束帧, 0, frameCount - 1);
+                    if (跳转条件list[i].结束帧 < 跳转条件list[i].开始帧)
+                    {
+                        跳转条件list[i].结束帧 = 跳转条件list[i].开始帧;
+                    }
+                    if (GUILayout.Button("添加输入", GUILayout.Width(60)))
+                    {
+                        跳转条件list[i].操作.Add(0);
+                    }
+                    for (int j = 0; j < 跳转条件list[i].操作.Count; j++)
+                    {
+                        跳转条件list[i].操作[j] = EditorGUILayout.Popup("选择操作", 跳转条件list[i].操作[j], 操作Array, GUILayout.Width(120));
+                        if (GUILayout.Button("X", GUILayout.Width(20)))
+                        {
+                            跳转条件list[i].操作.RemoveAt(j);
+                        }
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                
 
             }
         }
@@ -241,6 +338,24 @@ public class 技能编辑器Window : EditorWindow
         this.面向施法对象 = this.配置文件.面向施法对象;
         this.释放时可转向 = this.配置文件.释放时可转向;
         this.释放时可移动 = this.配置文件.释放时可移动;
+        // 动画
+        this.使用动画名 = this.配置文件.使用动画片段;
+        this.跳转条件list = this.配置文件.跳转条件list;
+        GameObject 模型_ = GameObject.Find(配置文件.模型name);
+        if (模型_ == null)
+        {
+            //多几个路基获取模型
+        }
+        else
+        {
+            模型 = 模型_;
+            ani = 模型.GetComponent<Animator>();
+            if (ani == null)
+            {
+                Debug.Log("模型没有绑定animator");
+                return;
+            }
+        }
     }
     /// <summary>
     /// 保存配置
@@ -253,7 +368,7 @@ public class 技能编辑器Window : EditorWindow
         this.配置文件.技能描述 = this.技能描述;
         this.配置文件.目标检测类型 = this.目标检测类型Idx;
         this.配置文件.技能目标类型 = this.技能目标类型Idx;
-        if (icon != null) this.配置文件.icon = this.技能Icon.name;
+        if (技能Icon != null) this.配置文件.icon = this.技能Icon.name;
         this.配置文件.技能类型 = this.技能类型Idx;
         this.配置文件.CD时间 = this.CD时间;
         this.配置文件.技能指示器形状 = 技能指示器形状Idx;
@@ -265,8 +380,18 @@ public class 技能编辑器Window : EditorWindow
         this.配置文件.面向施法对象 = this.面向施法对象;
         this.配置文件.释放时可转向 = this.释放时可转向;
         this.配置文件.释放时可移动 = this.释放时可移动;
+        // 动画
+        this.配置文件.模型name = this.模型.name;
+        this.配置文件.使用动画片段 = this.使用动画名;
+        this.配置文件.跳转条件list = this.跳转条件list;
+    }
+    public static float calcLabelWidth(GUIContent label)
+    {
+        return GUI.skin.label.CalcSize(label).x + EditorGUI.indentLevel * GUI.skin.label.fontSize * 2;
     }
 }
+
+
 
 
 public static class GUIStyles
@@ -274,4 +399,6 @@ public static class GUIStyles
     public static GUIStyle item_select = "MetransitionSelectHend";
     public static GUIStyle item_normal = "MetransitionSelect";
     public static GUIStyle box = "HelpBox";
+    public static GUIStyle textfield = "TestFilde";
+
 }
