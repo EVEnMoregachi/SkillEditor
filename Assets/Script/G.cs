@@ -13,4 +13,15 @@ public class G
 
     }
 
+    public class 攻击判定
+    {
+        public int 帧号;
+        public bool 是否重写范围;
+        public int 判定形状;
+        public float 参数1;
+        public float 参数2;
+        public Vector3 offset;
+
+    }
+
 }

@@ -12,7 +12,7 @@ public class SkillConfigsSto : ScriptableObject
     public string icon;
     public int 技能类型;
     public float CD时间;
-    public int 技能指示器形状;
+    public int 攻击判定形状Idx;
     public float 范围参数1;
     public float 范围参数2;
     public int 资源消耗类型;
