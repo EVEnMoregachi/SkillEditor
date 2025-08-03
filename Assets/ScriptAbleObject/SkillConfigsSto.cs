@@ -26,6 +26,9 @@ public class SkillConfigsSto : ScriptableObject
     public string 模型name;
     public string 使用动画片段;
     public List<G.跳转条件> 跳转条件list = new List<G.跳转条件>();
-    
 
+    // 战斗
+    public List<G.攻击判定> 攻击判定list = new List<G.攻击判定>();
+    // 特效 音效
+    public List<G.特效音效信息> 特效音效信息list = new List<G.特效音效信息>();
 }

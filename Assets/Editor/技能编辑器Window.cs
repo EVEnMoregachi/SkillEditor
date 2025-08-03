@@ -56,7 +56,7 @@ public class 技能编辑器Window : EditorWindow
     public float 偏移量X, 偏移量Y, 偏移量Z;
 
     private int 资源消耗类型Idx;
-    private string[]  资源消耗类型Array = new string[]
+    private string[] 资源消耗类型Array = new string[]
     {
         "法力",
         "精力",
@@ -99,8 +99,8 @@ public class 技能编辑器Window : EditorWindow
     List<G.跳转条件> 跳转条件list = new List<G.跳转条件>();
     // 攻击
     List<G.攻击判定> 攻击判定list = new List<G.攻击判定>();
-    bool 绘制攻击范围 = false;  
-    bool 是否重写攻击判定信息= false;
+    bool 绘制攻击范围 = false;
+    bool 是否重写攻击判定信息 = false;
 
     攻击判定.I判定范围 I判定范围_ = null;
     判定信息 判定信息_ = new 判定信息();
@@ -108,7 +108,20 @@ public class 技能编辑器Window : EditorWindow
     SphereBoundsHandle sphereHandle = new SphereBoundsHandle();
     攻击判定.BoxItem boxItem = new 攻击判定.BoxItem();
     攻击判定.SphereItem sphereItem = new 攻击判定.SphereItem();
-
+    // 特效 音效
+    List<G.特效音效信息> 特效音效信息list = new List<G.特效音效信息>();
+    private ParticleSystem 粒子特效;
+    float 特效播放时间;
+    double 上次Fx播放时间;
+    float 特效时长Max = 20f;
+    public AudioSource asl;
+    // 预览播放
+    bool playFrame = false;
+    float playTimer = 0f;
+    float playSpeed = 0.1f;
+    float frameRate = 0.033f;
+    int last_frameSelectIdx;
+    AnimationClip clip;
 
 
     [MenuItem("工具箱/技能编辑器")]
@@ -120,6 +133,7 @@ public class 技能编辑器Window : EditorWindow
 
     private void OnEnable()
     {
+        asl = Camera.main.GetComponent<AudioSource>();
         SceneView.duringSceneGui += OnSceneGUI;
     }
 
@@ -127,12 +141,63 @@ public class 技能编辑器Window : EditorWindow
     {
         SceneView.duringSceneGui -= OnSceneGUI;
     }
-
+    // 每帧调用
     private void OnSceneGUI(SceneView view)
     {
         OnSceneGUI();
+        FxUpdate();
+        AniPlayUpdate();
+
         view.Repaint();
         Repaint();
+    }
+
+    private void FxPlay()
+    {
+        if (Application.isPlaying || 粒子特效 == null)
+        {
+            return;
+        }
+        特效播放时间 = 0f;
+    }
+    /// <summary>
+    /// 特效播放
+    /// </summary>
+    private void FxUpdate()
+    {
+        var delta = EditorApplication.timeSinceStartup - 上次Fx播放时间;// 特效每帧时间间隔
+        上次Fx播放时间 = EditorApplication.timeSinceStartup;
+        特效播放时间 = Mathf.Clamp(特效播放时间 + (float)delta, 0, 特效时长Max);
+        doFxPlay();
+    }
+
+    private void doFxPlay()
+    {
+        if (Application.isPlaying || 粒子特效 == null) return;
+        粒子特效.Simulate(特效播放时间, true);
+        SceneView.RepaintAll();
+        Repaint();
+    }
+    /// <summary>
+    /// 播放预览
+    /// </summary>
+    private void AniPlayUpdate()
+    {
+        if (!playFrame) return;
+        int maxIdx = (int)(clip.length * clip.frameRate - 1);
+        if (maxIdx < 0) return;
+        playTimer += Time.deltaTime * playSpeed;
+        while (playTimer > frameRate)
+        {
+            int idx = frameSelectIdx;
+            playTimer -= frameRate;
+            idx += 1;
+            if (idx >= maxIdx)
+            {
+                idx = 0;
+            }
+            frameSelectIdx = idx;
+        }
     }
 
     void OnSceneGUI()
@@ -259,7 +324,7 @@ public class 技能编辑器Window : EditorWindow
                         break;
                 }
                 break;
-        
+
         }
         Func<Vector3> getOffset = () => new Vector3((offset.x), offset.y, offset.z);
         Func<Vector3> getSize = () => new Vector3((size.x), size.y, size.z);
@@ -324,7 +389,7 @@ public class 技能编辑器Window : EditorWindow
             ScriptableObject scriptable = ScriptableObject.CreateInstance<SkillConfigsSto>();
             int idx = 0;
             string url = "";
-            while(true)
+            while (true)
             {
                 url = path + configname + idx + ext;
                 if (!File.Exists(url))
@@ -336,7 +401,7 @@ public class 技能编辑器Window : EditorWindow
             loadConfig();
         }
         // 读取配置
-        配置文件 = EditorGUILayout.ObjectField("配置文件", 配置文件, typeof(SkillConfigsSto), true) as SkillConfigsSto;
+        配置文件 = EditorGUILayout.ObjectField("配置文件", 配置文件, typeof(SkillConfigsSto), true, GUILayout.Width(position.width - 20f)) as SkillConfigsSto;
         if (last配置文件 != 配置文件)
         {
             last配置文件 = 配置文件;
@@ -444,7 +509,7 @@ public class 技能编辑器Window : EditorWindow
                 }
                 EditorGUILayout.EndHorizontal();
 
-                EditorGUILayout.LabelField("使用动画片段：", 使用动画名);
+                EditorGUILayout.LabelField("使用动画片段：", 使用动画名, GUIStyles.textfield);
                 if (GUILayout.Button("添加跳转条件", GUILayout.Width(200)))
                 {
                     G.跳转条件 跳转条件 = new G.跳转条件();
@@ -509,31 +574,77 @@ public class 技能编辑器Window : EditorWindow
                     攻击判定list[i].帧号 = EditorGUILayout.IntField("帧号", 攻击判定list[i].帧号, GUILayout.Width(70));
                     攻击判定list[i].帧号 = Mathf.Clamp(攻击判定list[i].帧号, 0, (int)(clips[动画Idx].length * clips[动画Idx].frameRate - 1));
                     EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  是否重写范围"));
-                    攻击判定list[i].是否重写范围  = EditorGUILayout.Toggle("是否重写范围", 攻击判定list[i].是否重写范围, GUILayout.Width(100));
+                    攻击判定list[i].是否重写范围 = EditorGUILayout.Toggle("是否重写范围", 攻击判定list[i].是否重写范围, GUILayout.Width(100));
                     if (攻击判定list[i].是否重写范围)
                     {
                         EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  判定形状"));
                         攻击判定list[i].判定形状 = EditorGUILayout.Popup("判定形状", 攻击判定list[i].判定形状, 攻击判定形状Array, GUILayout.Width(120));
                         EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  参数1"));
-                        攻击判定list[i].参数1 = EditorGUILayout.FloatField("  参数1", 攻击判定list[i].参数1, GUILayout.Width(100));
+                        攻击判定list[i].参数1 = EditorGUILayout.FloatField("  参数1", 攻击判定list[i].参数1, GUILayout.MaxWidth(100));
                         EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  参数2"));
-                        攻击判定list[i].参数2 = EditorGUILayout.FloatField("  参数2", 攻击判定list[i].参数2, GUILayout.Width(100));
+                        攻击判定list[i].参数2 = EditorGUILayout.FloatField("  参数2", 攻击判定list[i].参数2, GUILayout.MaxWidth(100));
                         EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  offset"));
-                        EditorGUILayout.LabelField("  offset", GUILayout.Width(50));
+                        EditorGUILayout.LabelField("  offset", GUILayout.MaxWidth(50));
                         EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  x"));
-                        攻击判定list[i].offset.x = EditorGUILayout.FloatField("  x", 攻击判定list[i].offset.x, GUILayout.Width(50));
+                        攻击判定list[i].offset.x = EditorGUILayout.FloatField("  x", 攻击判定list[i].offset.x, GUILayout.MaxWidth(50));
                         EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  y"));
-                        攻击判定list[i].offset.y = EditorGUILayout.FloatField("  y", 攻击判定list[i].offset.y, GUILayout.Width(50));
+                        攻击判定list[i].offset.y = EditorGUILayout.FloatField("  y", 攻击判定list[i].offset.y, GUILayout.MaxWidth(50));
                         EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  z"));
-                        攻击判定list[i].offset.z = EditorGUILayout.FloatField("  z", 攻击判定list[i].offset.z, GUILayout.Width(50));
+                        攻击判定list[i].offset.z = EditorGUILayout.FloatField("  z", 攻击判定list[i].offset.z, GUILayout.MaxWidth(50));
                     }
                     EditorGUILayout.EndHorizontal();
                 }
+                // 特效与音效
+                if (GUILayout.Button("添加特效音效信息", GUILayout.Width(200)))
+                {
+                    G.特效音效信息 特效音效信息_ = new G.特效音效信息();
+                    特效音效信息_.帧号 = frameSelectIdx;
+                    特效音效信息list.Add(特效音效信息_);
+                }
+                for (int i = 0; i < 特效音效信息list.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button("删除", GUILayout.Width(40)))
+                    {
+                        特效音效信息list.RemoveAt(i);
+                        EditorGUILayout.EndHorizontal();
+                        continue;
+                    }
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("帧号"));
+                    特效音效信息list[i].帧号 = EditorGUILayout.IntField("帧号", 特效音效信息list[i].帧号, GUILayout.MaxWidth(100));
+                    特效音效信息list[i].帧号 = Mathf.Clamp(特效音效信息list[i].帧号, 0, (int)(clips[动画Idx].length * clips[动画Idx].frameRate - 1));
+                    特效音效信息list[i].粒子特效 = EditorGUILayout.ObjectField("特效", 特效音效信息list[i].粒子特效, typeof(ParticleSystem), true, GUILayout.MaxWidth(150)) as ParticleSystem;
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  offset"));
+                    EditorGUILayout.LabelField("  offset", GUILayout.MaxWidth(50));
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  x"));
+                    特效音效信息list[i].offset.x = EditorGUILayout.FloatField("  x", 特效音效信息list[i].offset.x, GUILayout.MaxWidth(50));
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  y"));
+                    特效音效信息list[i].offset.y = EditorGUILayout.FloatField("  y", 特效音效信息list[i].offset.y, GUILayout.MaxWidth(50));
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  z"));
+                    特效音效信息list[i].offset.z = EditorGUILayout.FloatField("  z", 特效音效信息list[i].offset.z, GUILayout.MaxWidth(50));
+                    EditorGUIUtility.labelWidth = calcLabelWidth(new GUIContent("  音效"));
+                    特效音效信息list[i].音效 = EditorGUILayout.ObjectField("音效", 特效音效信息list[i].音效, typeof(AudioClip), false, GUILayout.MaxWidth(150)) as AudioClip;
+
+                    EditorGUILayout.EndHorizontal();
+                }
                 // Scene角色动画播放与动画片段时间轴绘制
-                AnimationClip clip = clips[动画Idx];
+                clip = clips[动画Idx];
                 clip.SampleAnimation(ani.gameObject, 当前帧);
                 frameSelectIdx = EditorGUILayout.IntSlider(frameSelectIdx, 0, (int)(clip.length * clip.frameRate - 1));
+
+                if (last_frameSelectIdx != frameSelectIdx)
+                {
+                    播放当前帧存在的特效和音效(frameSelectIdx);
+                }
+                last_frameSelectIdx = frameSelectIdx;
+
+
                 EditorGUILayout.LabelField("动画时长：" + clip.length + "s");
+                if (GUILayout.Button(playFrame ? "停止" : "播放", GUILayout.Width(200)))
+                {
+                    playTimer = 0;
+                    playFrame = !playFrame;
+                }
                 deawFrames(clip);
             }
         }
@@ -544,7 +655,7 @@ public class 技能编辑器Window : EditorWindow
     int 找到当前帧号在攻击判定list中的索引(int num)
     {
         int res = 0;
-        foreach(var t in 攻击判定list)
+        foreach (var t in 攻击判定list)
         {
             if (t.帧号 == num)
                 return res;
@@ -559,6 +670,24 @@ public class 技能编辑器Window : EditorWindow
         return false;
     }
 
+    int 找到当前帧号在特效音效list中的索引(int num)
+    {
+        int res = 0;
+        foreach (var t in 特效音效信息list)
+        {
+            if (t.帧号 == num)
+                return res;
+            res++;
+        }
+        return -1;
+    }
+
+    bool 该帧是否有特效音效(int num)
+    {
+        if (特效音效信息list.Count - 1 >= num && num >= 0) return true;
+        return false;
+    }
+
     bool 该帧是否重写攻击判定信息(int num)
     {
         if (该帧是否有攻击判定(num))
@@ -566,6 +695,28 @@ public class 技能编辑器Window : EditorWindow
             return 攻击判定list[num].是否重写范围;
         }
         return false;
+    }
+
+    private void 播放当前帧存在的特效和音效(int frameSelectIdx)
+    {
+        foreach (var t in 特效音效信息list)
+        {
+            if (t.帧号 == frameSelectIdx)
+            {
+                if (t.粒子特效 != null)
+                {
+                    粒子特效 = t.粒子特效;
+                    粒子特效.gameObject.transform.position = 模型.transform.position + t.offset;
+                    FxPlay();
+                }
+                if (t.音效 != null)
+                {
+                    asl.clip = t.音效;
+                    asl.Play();
+                }
+                return;
+            }
+        }
     }
 
 
@@ -576,14 +727,15 @@ public class 技能编辑器Window : EditorWindow
     {
         int frameCount = (int)(clip.length * clip.frameRate);
         float 帧绘制width = 40f;
-        float 帧信息区域height = 50f;
+        float 帧信息区域height = 70f;
 
         float 窗口可视宽度 = position.width - 20f; // 留点边距，防止挤满
 
         scrollView = EditorGUILayout.BeginScrollView(
             scrollView,
             true, false,
-            GUILayout.Height(帧信息区域height)
+            GUILayout.Height(帧信息区域height),
+            GUILayout.Width(窗口可视宽度)
         );
 
         EditorGUILayout.BeginHorizontal();
@@ -592,7 +744,11 @@ public class 技能编辑器Window : EditorWindow
         {
             bool selected = i == frameSelectIdx;
             int 索引_ = 找到当前帧号在攻击判定list中的索引(i);
-            string title = string.Format("{0}\n{1}", i, 该帧是否有攻击判定(索引_) ? "口" : "");
+            int 索引Fx = 找到当前帧号在特效音效list中的索引(i);
+            string title = string.Format("{0}\n{1}\n{2}", i,
+                该帧是否有攻击判定(索引_) ? "口" : "",
+                该帧是否有特效音效(索引Fx) ? "Fx" : ""
+                );
 
             if (GUILayout.Button(title, selected ? GUIStyles.item_select : GUIStyles.item_normal, GUILayout.Width(帧绘制width)))
             {
@@ -652,6 +808,10 @@ public class 技能编辑器Window : EditorWindow
                 return;
             }
         }
+        // 战斗
+        this.攻击判定list = this.配置文件.攻击判定list;
+        // 特效 音效
+        this.特效音效信息list = this.配置文件.特效音效信息list;
     }
     /// <summary>
     /// 保存配置
@@ -680,6 +840,10 @@ public class 技能编辑器Window : EditorWindow
         this.配置文件.模型name = this.模型.name;
         this.配置文件.使用动画片段 = this.使用动画名;
         this.配置文件.跳转条件list = this.跳转条件list;
+        // 战斗
+        this.配置文件.攻击判定list = this.攻击判定list;
+        // 特效音效
+        this.配置文件.特效音效信息list = this.特效音效信息list;
     }
     public static float calcLabelWidth(GUIContent label)
     {
@@ -692,12 +856,12 @@ public class 技能编辑器Window : EditorWindow
 
 public static class GUIStyles
 {
-    public static GUIStyle item_select = "MetransitionSelectHend";
-    public static GUIStyle item_normal = "MetransitionSelect";
+    public static GUIStyle item_select = "MeTransitionSelectHead";
+    public static GUIStyle item_normal = "MeTransitionSelect";
     //public static GUIStyle item_select = new GUIStyle(EditorStyles.helpBox) { normal = { textColor = Color.green } };
     //public static GUIStyle item_normal = new GUIStyle(EditorStyles.helpBox);
     public static GUIStyle box = "HelpBox";
-    public static GUIStyle textfield = "TestFilde";
+    public static GUIStyle textfield = "TextField";
 
 }
 
@@ -759,7 +923,7 @@ public abstract class DeawTools
     public static Color 默认Color = Color.white;
     public abstract void DrawLine(Vector3 strat, Vector3 end);
 
-    public virtual Color color {get; set;}
+    public virtual Color color { get; set; }
     public Color 线框Color => new Color(1, 1, 1, color.a);
     public int 圆切割精度 = 30;
     public bool 填充绘制 = false;
@@ -905,7 +1069,7 @@ public static class MathTools
     /// <param name="matrix"></param>
     /// <param name="count">圆形切割边数</param>
     /// <returns></returns>
-    public static Vector3[] CalcCircleVertex(float radius,Matrix4x4 matrix, int count = 30)
+    public static Vector3[] CalcCircleVertex(float radius, Matrix4x4 matrix, int count = 30)
     {
         float deg = 2 * Mathf.PI;
         float delatDeg = deg / count;

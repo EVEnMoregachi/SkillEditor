@@ -24,4 +24,14 @@ public class G
 
     }
 
+    public class 特效音效信息
+    {
+        public int 帧号;
+        public ParticleSystem 粒子特效;
+        public string 特效ID;
+        public Vector3 offset;
+        public AudioClip 音效;
+    }
+
+
 }
