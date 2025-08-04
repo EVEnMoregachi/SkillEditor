@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
+﻿using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 
 internal class EditorWindowManager
@@ -21,11 +18,11 @@ internal class EditorWindowManager
         }
     }
 
-    public static void RemoceWindow(EditorWindowBase window)
+    public static void Remove重复窗口(EditorWindowBase window)
     {
         重复窗口优先级--;
         window.优先级 = 重复窗口优先级;
-        if (!windowList.Contains(window))
+        if (windowList.Contains(window))
         {
             windowList.Remove(window);
             SortWindowList();
@@ -37,13 +34,14 @@ internal class EditorWindowManager
         if (windowList.Count > 0)
         {
             windowList[windowList.Count - 1].Focus();
+            
         }
     }
 
     /// <summary>
     /// 关闭所有弹窗
     /// </summary>
-    public static void destroyWindow()
+    public static void destroyAllWindow()
     {
         for (int i = 0; i < windowList.Count; i++)
         {
@@ -57,6 +55,9 @@ internal class EditorWindowManager
 
     private static void SortWindowList()
     {
-        windowList.Sort((x, y) => x.优先级.CompareTo(y.优先级));
+        windowList.Sort((x, y) =>
+        {
+            return x.优先级.CompareTo(y.优先级);
+        });
     }
 }

@@ -54,24 +54,35 @@ public class 重复窗口 : EditorWindowBase
     {
         GUILayout.BeginVertical();
         EditorGUILayout.LabelField("设置", GUILayout.Width(100));
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("测试窗口", GUILayout.Width(100)))
-            {
-                Popup(this.position.position);
-            }
-    
-            if (GUILayout.Button("取消", GUILayout.Width(100)))
-            {
-                this.Close();
-            }
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("测试窗口", GUILayout.Width(100)))
+        {
+            Popup(this.position.position);
+        }
 
+        if (GUILayout.Button("取消", GUILayout.Width(100)))
+        {
+            this.Close();
+        }
 
-            EditorGUILayout.EndHorizontal();
+        if (GUILayout.Button("聚焦", GUILayout.Width(100)))
+        {
+            EditorWindowManager.focusWindow();
+        }
+
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.TextArea("优先级：" + 优先级);
         GUILayout.EndVertical();
     }
     private void OnFocus()
     {
         // 始终聚焦最高优先级的弹窗
+        EditorWindowManager.focusWindow();
+    }
+
+    private void OnDestroy()
+    {
+        EditorWindowManager.Remove重复窗口(this);
         EditorWindowManager.focusWindow();
     }
 }

@@ -9,7 +9,9 @@ public class EditorWindowBase : EditorWindow
 
     private void OnFocus()
     {
+
         EditorWindowManager.focusWindow();
+
     }
 
 
