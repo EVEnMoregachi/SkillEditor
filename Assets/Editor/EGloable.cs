@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ internal class EG
     }
 
     private static void 初始化字典()
-    {
+    {   // 这里的第一个值对应Gloable.cs中行为类型Array的值，第二个值对应二级菜单的值
         动作类字典.Add(new Vector2(5, 0), "计时器动作");
         动作类字典.Add(new Vector2(4, 0), "技能_造成伤害");
         动作类字典.Add(new Vector2(0, 0), "判断动作");
@@ -93,4 +94,28 @@ internal class EG
         }
     }
 
+}
+
+public interface I动作
+{
+    public void 渲染();
+    public void 数据项目新增(string type);
+
+}
+
+public abstract class 动作 : I动作
+{
+    public int 动作类型;
+    public int 具体动作;
+    public abstract void 数据项目新增(string type);
+    public abstract void 渲染();
+
+
+}
+
+public class 创建计时器info
+{
+    public int 计时器类型;
+    public float 计时周期;
+    public List<动作> 动作list;
 }

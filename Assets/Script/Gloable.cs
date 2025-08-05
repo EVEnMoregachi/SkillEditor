@@ -270,6 +270,27 @@ public class G
                     "技能的目标点",
                     "玩家点击场景点",
     };
+
+    public class 数值条件info
+    {
+        public int 数值关系;
+        public int 数值1选项;
+        public float 手动数值1;
+        public int 数值2选项;
+        public float 手动数值2;
+    }
+
+    public class 设置局部变量info
+    {
+        public int 变量类型;
+        public string 变量名;
+        public float 手动变量数值;
+        public int 变量函数;
+    }
+
+    
+
+
     // ------------- 触发器 end -------------
 
 
