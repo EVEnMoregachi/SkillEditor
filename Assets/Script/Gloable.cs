@@ -213,7 +213,7 @@ public class G
         二级菜单.Add(计时器Array);
         根据ID选择二级菜单.Add("行为", 二级菜单);
     }
-    // 三级菜单 
+    // 三级及以上菜单 (细分菜单)
     public static string[] 变量类型Array = new string[]
     {
                 "单位",
@@ -224,7 +224,7 @@ public class G
                 "技能实例",
                 "特效",
     };
-    // 四级菜单 
+
     public static string[] 变量函数_单位Array = new string[]
     {
                     "任意单位",
@@ -234,7 +234,12 @@ public class G
                     "范围最近单位",
                     "范围内血量最少的单位",
                     "范围内随机单位",
-    };  
+    };
+
+    public static string[] 单体单位选择_Array = new string[]
+    {
+                    "技能目标单位",
+    };
 
     public static string[] 变量函数_整数Array = new string[]
     {
@@ -245,30 +250,31 @@ public class G
 
     public static string[] 计时器类型_Array = new string[]
     {
-                    "单词",
-                    "循环",
+                "单词",
+                "循环",
     };  
 
     public static string[] 技能选择_Array = new string[]
     {
-                    "触发技能",
-                    "循环",
+                "触发技能",
+                "技能事件技能",
     };
 
     public static string[] 单位组选择_Array = new string[]
     {
-                    "范围内所有单位",
-                    "随机单位组",
-                    "技能作用范围内的单位组",
+                "范围内所有单位",
+                "随机单位组",
+                "技能作用范围内的单位组",
+                "创建单位组",
     };
 
     public static string[] 指定点选择_Array = new string[]
     {
-                    "指定范围内的随机点",
-                    "单位的位置",
-                    "技能的时放点",
-                    "技能的目标点",
-                    "玩家点击场景点",
+                "指定范围内的随机点",
+                "单位的位置",
+                "技能的时放点",
+                "技能的目标点",
+                "玩家点击场景点",
     };
 
     public class 数值条件info

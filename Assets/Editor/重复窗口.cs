@@ -61,32 +61,6 @@ public class 重复窗口 : EditorWindowBase
     private void OnGUI()
     {
         OnEditorGUI();
-
-        // test
-        //GUILayout.BeginVertical();
-        //{
-        //    EditorGUILayout.LabelField("设置", GUILayout.Width(100));
-        //    EditorGUILayout.BeginHorizontal();
-        //    {
-        //        if (GUILayout.Button("测试窗口", GUILayout.Width(100)))
-        //        {
-        //            Popup(this.position.position);
-        //        }
-
-        //        if (GUILayout.Button("取消", GUILayout.Width(100)))
-        //        {
-        //            this.Close();
-        //        }
-
-        //        if (GUILayout.Button("聚焦", GUILayout.Width(100)))
-        //        {
-        //            EditorWindowManager.focusWindow();
-        //        }
-        //    }
-        //    EditorGUILayout.EndHorizontal();
-        //    EditorGUILayout.TextArea("优先级：" + 优先级);
-        //}
-        //GUILayout.EndVertical();
     }
 
     void OnEditorGUI()

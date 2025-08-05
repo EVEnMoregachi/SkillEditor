@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 
-internal class EG
+public class EG
 {
     public class 单位组Bass
     {
@@ -31,10 +31,18 @@ internal class EG
     }
 
     private static void 初始化字典()
-    {   // 这里的第一个值对应Gloable.cs中行为类型Array的值，第二个值对应二级菜单的值
-        动作类字典.Add(new Vector2(5, 0), "计时器动作");
-        动作类字典.Add(new Vector2(4, 0), "技能_造成伤害");
+    {   // 这里的第一个值对应Gloable.cs中行为类型Array的值，第二个值对应二级菜单的值 ……
         动作类字典.Add(new Vector2(0, 0), "判断动作");
+        动作类字典.Add(new Vector2(1, 0), "变量_设置局部变量_单位组");
+        动作类字典.Add(new Vector2(1, 1), "变量_设置局部变量_技能实例");
+        动作类字典.Add(new Vector2(1, 2), "变量_设置全局变量_整数");
+        动作类字典.Add(new Vector2(2, 0), "触发器_运行触发器");
+        动作类字典.Add(new Vector2(2, 1), "触发器_创建触发器");
+        动作类字典.Add(new Vector2(3, 0), "单位组_为单位组添加单位");
+        动作类字典.Add(new Vector2(4, 6), "技能_造成伤害");
+        动作类字典.Add(new Vector2(4, 8), "技能_施加buff");
+        动作类字典.Add(new Vector2(5, 0), "计时器_创建计时器");
+        动作类字典.Add(new Vector2(5, 1), "计时器_运行计时器");
     }
 
     public class 单位组_随机单位组 : 单位组Bass
