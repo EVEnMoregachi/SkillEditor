@@ -12,12 +12,12 @@ public class 模板 : 动作
 
     public override void 渲染()
     {
-        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.BeginVertical();
         {
             EditorGUILayout.LabelField(动作描述, GUILayout.Width(150));
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent(""));
 
         }
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
     }
 }

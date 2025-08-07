@@ -10,6 +10,8 @@ public class 触发器Window : EditorWindowBase ,I动作
     [MenuItem("工具箱/触发器编辑器", false, 2)]
     static void ShowWindow()
     {
+        G.初始化();
+        动作list.Clear();
         触发器Window window = EditorWindow.GetWindow<触发器Window>();
         window.Show();
     }
@@ -18,22 +20,32 @@ public class 触发器Window : EditorWindowBase ,I动作
     bool m_Foldout1;
     GUIContent m_Content1 = new GUIContent("触发器项目");
     private Vector2 scrollView = Vector2.zero;
+    private Vector2 scrollViewMain = new Vector2(150, 0);
 
     public static List<动作> 动作list = new List<动作>();
 
     private void OnGUI()
     {
         SceneView.RepaintAll();
-        if (GUILayout.Button("新建触发器", GUILayout.Width(200)))
+        EditorGUILayout.BeginHorizontal();
         {
+            if (GUILayout.Button("新建触发器", GUILayout.Width(150)))
+            {
 
+            }
+            if (GUILayout.Button("初始化编辑器", GUILayout.Width(150)))
+            {
+                G.初始化();
+                动作list.Clear();
+            }
         }
+        EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         {
             EditorGUILayout.BeginVertical(GUI.skin.box);
             {
-                scrollView = EditorGUILayout.BeginScrollView(scrollView, true, true, GUILayout.Width(150), GUILayout.Height(400));
+                scrollView = EditorGUILayout.BeginScrollView(scrollView, true, true, GUILayout.Width(150));
                 EditorGUILayout.EndScrollView();
             }
             EditorGUILayout.EndVertical();
@@ -43,15 +55,19 @@ public class 触发器Window : EditorWindowBase ,I动作
                 m_Foldout1 = EditorGUILayout.Foldout(m_Foldout1, m_Content1);
                 if (m_Foldout1)
                 {
-                    EditorGUILayout.BeginHorizontal();
+                    scrollViewMain = EditorGUILayout.BeginScrollView(scrollViewMain, true, true);
                     {
-                        if (GUILayout.Button("新建行为", GUILayout.Width(200)))
+                        EditorGUILayout.BeginHorizontal();
                         {
-                            重复窗口.Popup(this.position.position).设置页面参数(this, "行为", "行为类别", "行为二级类别", G.行为类型Array);
+                            if (GUILayout.Button("新建行为", GUILayout.Width(200)))
+                            {
+                                重复窗口.Popup(this.position.position).设置页面参数(this, "行为", "行为类别", "行为二级类别", G.行为类型Array);
+                            }
                         }
+                        EditorGUILayout.EndHorizontal();
+                        渲染全部行为项目();
                     }
-                    EditorGUILayout.EndHorizontal();
-                    渲染全部行为项目();
+                    EditorGUILayout.EndScrollView();
                 }
             }
             EditorGUILayout.EndVertical();
@@ -61,9 +77,12 @@ public class 触发器Window : EditorWindowBase ,I动作
 
     private void 渲染全部行为项目()
     {
-        for(int i = 0; i < 动作list.Count; i++)
+        for (int i = 0; i < 动作list.Count; i++)
         {
+            EditorGUILayout.LabelField("行为 " + i.ToString() + ": ");
+            EditorGUI.indentLevel++;
             动作list[i]?.渲染();
+            EditorGUI.indentLevel--;
         }
     }
 

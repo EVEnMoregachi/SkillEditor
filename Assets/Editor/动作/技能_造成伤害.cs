@@ -22,21 +22,21 @@ public class 技能_造成伤害 : 动作
 
     public override void 渲染()
     {
-        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.BeginVertical();
         {
             EditorGUILayout.LabelField(动作描述, GUILayout.Width(150));
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("单位选择"));
-            单位选择 = EditorGUILayout.Popup("单位选择", 单位选择, G.变量函数_单位Array, GUILayout.Width(150));
+            单位选择 = EditorGUILayout.Popup("单位选择", 单位选择, G.变量函数_单位Array, GUILayout.Width(250));
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("技能选择"));
-            技能选择 = EditorGUILayout.Popup("技能选择", 技能选择, G.技能选择_Array, GUILayout.Width(150));
+            技能选择 = EditorGUILayout.Popup("技能选择", 技能选择, G.技能选择_Array, GUILayout.Width(250));
             渲染单位选择();
             渲染单位组选择();
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("伤害数字序列"));
-            伤害数值序列 = EditorGUILayout.IntField("伤害数值序列", 伤害数值序列, GUILayout.Width(150));
+            伤害数值序列 = EditorGUILayout.IntField("伤害数值序列", 伤害数值序列, GUILayout.Width(200));
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("受击特效序列"));
-            受击特效序列 = EditorGUILayout.IntField("受击特效序列", 受击特效序列, GUILayout.Width(150));
+            受击特效序列 = EditorGUILayout.IntField("受击特效序列", 受击特效序列, GUILayout.Width(200));
         }
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
     }
 
     void 渲染单位选择()
@@ -44,7 +44,7 @@ public class 技能_造成伤害 : 动作
         EditorGUI.BeginChangeCheck();
         {
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("被伤害单位"));
-            被伤害单位选择 = EditorGUILayout.Popup("被伤害单位", 被伤害单位选择, G.单体单位选择_Array, GUILayout.Width(400));
+            被伤害单位选择 = EditorGUILayout.Popup("被伤害单位", 被伤害单位选择, G.单体单位选择_Array, GUILayout.Width(250));
         }
     }
 
@@ -53,7 +53,7 @@ public class 技能_造成伤害 : 动作
         EditorGUI.BeginChangeCheck();
         {
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("被伤害单位组"));
-            被伤害单位组选择 = EditorGUILayout.Popup("被伤害单位组", 被伤害单位组选择, G.单位组选择_Array, GUILayout.Width(400));
+            被伤害单位组选择 = EditorGUILayout.Popup("被伤害单位组", 被伤害单位组选择, G.单位组选择_Array, GUILayout.Width(250));
         }
         if (EditorGUI.EndChangeCheck())
         {

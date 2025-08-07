@@ -36,8 +36,8 @@ public class EG
         动作类字典.Add(new Vector2(1, 0), "变量_设置局部变量_单位组");
         动作类字典.Add(new Vector2(1, 1), "变量_设置局部变量_技能实例");
         动作类字典.Add(new Vector2(1, 2), "变量_设置全局变量_整数");
-        动作类字典.Add(new Vector2(2, 0), "触发器_运行触发器");
-        动作类字典.Add(new Vector2(2, 1), "触发器_创建触发器");
+        动作类字典.Add(new Vector2(2, 0), "触发器_创建触发器");
+        动作类字典.Add(new Vector2(2, 1), "触发器_运行触发器");
         动作类字典.Add(new Vector2(3, 0), "单位组_为单位组添加单位");
         动作类字典.Add(new Vector2(4, 6), "技能_造成伤害");
         动作类字典.Add(new Vector2(4, 8), "技能_施加buff");

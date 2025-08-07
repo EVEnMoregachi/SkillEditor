@@ -14,14 +14,13 @@ public class 重复窗口 : EditorWindowBase
     I动作 I动作_;
 
 
-
     public static 重复窗口 Popup(Vector3 positon)
     {
         重复窗口 window = GetWindowWithRectPrivate(
             typeof(重复窗口),
             new Rect(new Vector2(0, 0), new Vector2(300, 200)),
             true,
-            "弹窗") as 重复窗口;
+            "新建") as 重复窗口;
 
         // 优先级焦点管理器
         EditorWindowManager.add重复窗口(window);
@@ -68,24 +67,20 @@ public class 重复窗口 : EditorWindowBase
         GUILayout.Space(12);
         GUILayout.BeginVertical();
         {
-            EditorGUILayout.LabelField("设置", GUILayout.Width(600));
-            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("设置" + 当前选择name, GUILayout.Width(600));
+            EditorGUILayout.BeginVertical();
             {
                 渲染条件页面();
             }
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Space(100);
+            EditorGUILayout.EndVertical();
             EditorGUILayout.BeginHorizontal();
             {
-                if (GUILayout.Button("打开窗口", GUILayout.Width(100)))
-                {
-                    Popup(this.position.position);
-                }
-                if (GUILayout.Button("取消", GUILayout.Width(100)))
+                
+                if (GUILayout.Button("取消", GUILayout.Width(150)))
                 {
                     this.Close();
                 }
-                if (GUILayout.Button("确定", GUILayout.Width(100)))
+                if (GUILayout.Button("确定", GUILayout.Width(150)))
                 {
                     I动作_.数据项目新增(EG.根据key获取动作类(new Vector2(条件1级, 条件2级)));
                     this.Close();
@@ -99,20 +94,19 @@ public class 重复窗口 : EditorWindowBase
     private void 渲染条件页面()
     {
         EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent(条件1级label));
-        条件1级 = EditorGUILayout.Popup(条件1级label, 条件1级, 条件1级Array, GUILayout.MaxWidth(150));
+        条件1级 = EditorGUILayout.Popup(条件1级label, 条件1级, 条件1级Array);
         EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent(条件2级label));
-        条件2级 = EditorGUILayout.Popup(条件2级label, 条件2级, G.根据ID选择二级菜单[当前选择name][条件1级], GUILayout.MaxWidth(150));
-        switch (条件1级 + "^" + 条件2级)
-        {
-            case "3^0":// 创建计时器
-                EditorGUILayout.BeginHorizontal();
-                {
-                    EditorGUILayout.LabelField("创建计时器", GUILayout.Width(25));
-                }
-                EditorGUILayout.EndHorizontal();
-                break;
-        
-        }
+        条件2级 = EditorGUILayout.Popup(条件2级label, 条件2级, G.根据ID选择二级菜单[当前选择name][条件1级]);
+        //switch (条件1级 + "^" + 条件2级)
+        //{
+        //    case "5^0":// 创建计时器
+        //        EditorGUILayout.BeginHorizontal();
+        //        {
+        //            EditorGUILayout.LabelField("创建计时器");
+        //        }
+        //        EditorGUILayout.EndHorizontal();
+        //        break;
+        //}
     }
 
     public void 设置页面参数(I动作 I动作, string name, string label1, string label2, string[] label1Array)

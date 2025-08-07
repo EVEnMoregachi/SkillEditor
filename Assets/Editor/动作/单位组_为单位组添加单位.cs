@@ -20,7 +20,7 @@ public class 单位组_为单位组添加单位 : 动作
             EditorGUILayout.LabelField(动作描述, GUILayout.Width(200));
 
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("变量名"));
-            变量名 = EditorGUILayout.TextField("变量名", GUILayout.Width(150));
+            变量名 = EditorGUILayout.TextField("变量名", 变量名, GUILayout.Width(150));
             添加的单位类型 = EditorGUILayout.Popup("", 添加的单位类型, G.变量函数_单位Array, GUILayout.MaxWidth(150));
         }
         EditorGUILayout.EndHorizontal();

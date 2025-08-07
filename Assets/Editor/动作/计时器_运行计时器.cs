@@ -19,8 +19,8 @@ public class 计时器_运行计时器 : 动作
         EditorGUILayout.BeginHorizontal();
         {
             EditorGUILayout.LabelField(动作描述, GUILayout.Width(100));
-            EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("计时器变量名"));
-            计时器name = EditorGUILayout.TextField("运行计时器", 计时器name, GUILayout.MaxWidth(150));
+            EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("运行计时器"));
+            计时器name = EditorGUILayout.TextField("运行计时器", 计时器name, GUILayout.MaxWidth(200));
         }
         EditorGUILayout.EndHorizontal();
     }

@@ -16,11 +16,11 @@ public class 变量_设置局部变量_技能实例 : 动作
     {
         EditorGUILayout.BeginHorizontal();
         {
-            EditorGUILayout.LabelField(动作描述, GUILayout.Width(150));
+            EditorGUILayout.LabelField(动作描述, GUILayout.Width(200));
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("变量名"));
-            变量名 = EditorGUILayout.TextField("变量名", 变量名, GUILayout.MaxWidth(100));
+            变量名 = EditorGUILayout.TextField("变量名", 变量名, GUILayout.MaxWidth(200));
             EditorGUIUtility.labelWidth = EG.calcLabelWidth(new GUIContent("创建数据类型"));
-            创建数据类型 = EditorGUILayout.Popup("", 创建数据类型, G.技能选择_Array, GUILayout.MaxWidth(100));
+            创建数据类型 = EditorGUILayout.Popup("", 创建数据类型, G.技能选择_Array, GUILayout.MaxWidth(150));
         }
         EditorGUILayout.EndHorizontal();
     }

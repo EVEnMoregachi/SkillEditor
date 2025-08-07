@@ -129,8 +129,9 @@ public class G
 
     public static string[] 变量Array = new string[]
     {
-            "设置局部变量",
-            "变量赋值",
+            "设置局部变量_单位组",
+            "设置局部变量_技能实例",
+            "设置全局变量_整数",
     };
 
     public static string[] 触发器Array = new string[]
@@ -155,31 +156,54 @@ public class G
             "技能造成伤害",
             "技能造成治疗",
             "技能施加buff",
+            "技能注册单位技能事件",
+
     };
 
     public static string[] 计时器Array = new string[]
     {
             "创建计时器",
             "运行计时器",
-            "暂停计时器",
-            "重置计时器",
-            "设置计时器周期",
-            "删除计时器",
+            //"暂停计时器",
+            //"重置计时器",
+            //"设置计时器周期",
+            //"删除计时器",
     };
 
+    // 条件判断一级菜单(if)
     public static string[] 条件判断1级参数Array = new string[]
     {
             "数值",
-
     };
 
+    // 条件判断二级菜单
     public static string[] 条件判断2级参数Array = new string[]
     {
             "整数判断",
             "浮点数判断",
-
     };
 
+    static List<string[]> 二级菜单 = new List<string[]>();
+    static List<string[]> 条件判断二级菜单 = new List<string[]>();
+    public static Dictionary<string, List<string[]>> 根据ID选择二级菜单 = new Dictionary<string, List<string[]>>();
+
+    public static void 初始化()
+    {
+        根据ID选择二级菜单.Clear();
+        二级菜单.Clear();
+        二级菜单.Add(判断Array);
+        二级菜单.Add(变量Array);
+        二级菜单.Add(触发器Array);
+        二级菜单.Add(单位组Array);
+        二级菜单.Add(技能Array);
+        二级菜单.Add(计时器Array);
+        根据ID选择二级菜单.Add("行为", 二级菜单);
+
+        条件判断二级菜单.Add(条件判断2级参数Array);
+        根据ID选择二级菜单.Add("条件", 条件判断二级菜单);
+    }
+    // 三级及以上菜单 (细分菜单)
+    // -------------判断细分选项 start---------------
     public static string[] 数值关系Array = new string[]
     {
             "等于",
@@ -197,23 +221,9 @@ public class G
             "读取变量",
             "使用函数",
     };
+    // -------------判断细分选项 end---------------
 
-    static List<string[]> 二级菜单 = new List<string[]>();
-    public static Dictionary<string, List<string[]>> 根据ID选择二级菜单 = new Dictionary<string, List<string[]>>();
 
-    public static void 初始化()
-    {
-        根据ID选择二级菜单.Clear();
-        二级菜单.Clear();
-        二级菜单.Add(判断Array);
-        二级菜单.Add(变量Array);
-        二级菜单.Add(触发器Array);
-        二级菜单.Add(单位组Array);
-        二级菜单.Add(技能Array);
-        二级菜单.Add(计时器Array);
-        根据ID选择二级菜单.Add("行为", 二级菜单);
-    }
-    // 三级及以上菜单 (细分菜单)
     public static string[] 变量类型Array = new string[]
     {
                 "单位",
@@ -245,12 +255,13 @@ public class G
     {
                     "绝对值",
                     "相反数",
+                    "自增",
     };
 
 
     public static string[] 计时器类型_Array = new string[]
     {
-                "单词",
+                "单次",
                 "循环",
     };  
 
@@ -275,6 +286,20 @@ public class G
                 "技能的时放点",
                 "技能的目标点",
                 "玩家点击场景点",
+    };
+
+    public static string[] 事件选择Array = new string[]
+    {
+                "单位升级",
+                "单位复活",
+                "单位死亡",
+                "击杀单位",
+                "造成伤害",
+                "受到伤害",
+                "受到暴击伤害",
+                "受到暴击伤害",
+                "造成治疗",
+                "受到治疗",
     };
 
     public class 数值条件info
