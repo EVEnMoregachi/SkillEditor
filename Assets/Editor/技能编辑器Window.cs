@@ -78,8 +78,16 @@ public class 技能编辑器Window : EditorWindow
     string path = "Assets/Resources/";
     string configname = "skillConfig";
     string ext = ".asset";
+    string byt = ".bytes";
+
+    string data;
+    string bytURL;
+
     public SkillConfigsSto 配置文件;
     public SkillConfigsSto last配置文件;
+
+    public TextAsset 配置文件_;
+
     // 动画
     public GameObject 模型;
     Animator ani;
@@ -124,7 +132,7 @@ public class 技能编辑器Window : EditorWindow
     AnimationClip clip;
 
 
-    [MenuItem("工具箱/技能编辑器")]
+    [MenuItem("工具箱/技能编辑器", false, 0)]
     static void ShowWindow()
     {
         技能编辑器Window window = EditorWindow.GetWindow<技能编辑器Window>();
@@ -391,22 +399,29 @@ public class 技能编辑器Window : EditorWindow
             string url = "";
             while (true)
             {
-                url = path + configname + idx + ext;
+                url = path + configname + idx + byt;
                 if (!File.Exists(url))
                     break;
                 idx++;
             }
-            AssetDatabase.CreateAsset(scriptable, url);
-            this.配置文件 = Resources.Load(configname + idx) as SkillConfigsSto;
+            data = DataUtility.ToJson<SkillConfigsSto>(new SkillConfigsSto());
+            bytURL = path + configname + idx + byt;
+            File.WriteAllText(bytURL, data);
+            AssetDatabase.Refresh();
+            配置文件_ = AssetDatabase.LoadAssetAtPath<TextAsset>(path + configname + idx + byt) as TextAsset;
             loadConfig();
         }
+
+        EditorGUI.BeginChangeCheck();
+
         // 读取配置
-        配置文件 = EditorGUILayout.ObjectField("配置文件", 配置文件, typeof(SkillConfigsSto), true, GUILayout.Width(position.width - 20f)) as SkillConfigsSto;
-        if (last配置文件 != 配置文件)
+        配置文件_ = EditorGUILayout.ObjectField("配置文件", 配置文件_, typeof(TextAsset), true) as TextAsset;
+        if (EditorGUI.EndChangeCheck())
         {
-            last配置文件 = 配置文件;
+            bytURL = path + 配置文件_.name + byt;
             loadConfig();
         }
+
         // 保存配置
         if (GUILayout.Button("保存", GUILayout.Width(100)))
         {
@@ -772,6 +787,9 @@ public class 技能编辑器Window : EditorWindow
     /// </summary>
     void loadConfig()
     {
+        string data = 配置文件_.text;
+        配置文件 = DataUtility.FromJson<SkillConfigsSto>(data);
+
         if (this.配置文件 == null) return;
         this.技能ID = this.配置文件.技能ID;
         this.技能名称 = this.配置文件.技能名称;
@@ -837,13 +855,21 @@ public class 技能编辑器Window : EditorWindow
         this.配置文件.释放时可转向 = this.释放时可转向;
         this.配置文件.释放时可移动 = this.释放时可移动;
         // 动画
-        this.配置文件.模型name = this.模型.name;
-        this.配置文件.使用动画片段 = this.使用动画名;
-        this.配置文件.跳转条件list = this.跳转条件list;
+        if (模型 != null)
+        {
+            this.配置文件.模型name = this.模型.name;
+            this.配置文件.使用动画片段 = this.使用动画名;
+            this.配置文件.跳转条件list = this.跳转条件list;
+        }
         // 战斗
         this.配置文件.攻击判定list = this.攻击判定list;
         // 特效音效
         this.配置文件.特效音效信息list = this.特效音效信息list;
+
+        data = DataUtility.ToJson<SkillConfigsSto>(配置文件);
+        File.WriteAllText(bytURL, data);
+        AssetDatabase.Refresh();
+        确认窗口.Popup(new Vector3(Screen.width / 2, Screen.height / 2));
     }
     public static float calcLabelWidth(GUIContent label)
     {
